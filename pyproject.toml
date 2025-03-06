@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["qto"]
+
+[tool.poetry]
+description = ""
+authors = ["jiang7f <jiang7ff@163.com>"]
+dependencies = { python = "^3.10" }
+package_data = { "qto.solvers.cloud_execute" = ["IBM.key"] }
+
+[project]
+name = "qto"
+version = "1.0.0"
