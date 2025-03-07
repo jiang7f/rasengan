@@ -40,17 +40,12 @@ class Solver(ABC):
         self.optimizer.optimizer_option.cost_func = self.circuit.get_circuit_cost_func()
         self.optimizer.optimizer_option.num_params = self.circuit.get_num_params()
         best_params, self.iter_count = self.optimizer.minimize()
-        iprint(f'best_params: {best_params}')
+        # iprint(f'best_params: {best_params}')
         self.collapse_state_lst, self.probs_lst = self.circuit.inference(best_params)
         solver_end_time = time.perf_counter()  # 使用 perf_counter 记录结束时间
         self.end_to_end_time = solver_end_time - self.solver_start_time
         return self.collapse_state_lst, self.probs_lst, self.iter_count
-    
-    # def solve(self):
-    #     result = self.solve()
-    #     end_time = time.perf_counter()  # 使用 perf_counter 记录结束时间
-        # self.end_to_end_time = end_time - self.start_time  # 计算耗时
-    #     return result
+
     
     def evaluation(self):
         """在调用过solve之后使用"""

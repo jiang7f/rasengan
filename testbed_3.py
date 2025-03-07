@@ -8,8 +8,10 @@ from qto.solvers.qiskit import (
     HeaSolver, PenaltySolver, CyclicSolver, ChocoSolver, RasenganSolver, RasenganSegmentedSolver,
     AerProvider, AerGpuProvider, DdsimProvider, FakeBrisbaneProvider, FakeKyivProvider, FakeTorinoProvider, 
 )
+from qto.solvers.qiskit.explorer import QtoExplorer
 
 num_case = 1
+# a, b = generate_scp(num_case,[(3, 3)])
 a, b = generate_scp(num_case,[(5, 5)])
 # print(a[0][0])
 # (1, [(2, 1), (3, 2), (3, 3), (4, 3), (4, 4)], 1, 20)
@@ -23,7 +25,7 @@ for i in range(num_case):
     opt = CobylaOptimizer(max_iter=200)
     aer = DdsimProvider()
     a[0][i].set_penalty_lambda(400)
-    solver = RasenganSolver(
+    explorer = QtoExplorer(
         prb_model=a[0][i],  # 问题模型
         optimizer=opt,  # 优化器
         provider=aer,  # 提供器（backend + 配对 pass_mannager ）
@@ -32,5 +34,5 @@ for i in range(num_case):
         # mcx_mode="linear",
     )
 
-    num, _, depth = solver.search()
-    print(num, depth)
+    num_basis_lists, set_basis_lists, depth_lists = explorer.explore()
+    print(num_basis_lists, depth_lists)

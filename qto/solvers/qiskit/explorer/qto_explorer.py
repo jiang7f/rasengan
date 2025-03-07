@@ -2,7 +2,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 
-from qto.solvers.abstract_solver import Solver
+from qto.solvers.abstract_explorer import Explorer
 from qto.solvers.optimizers import Optimizer
 from qto.solvers.options import CircuitOption, OptimizerOption, ModelOption
 from qto.solvers.options.circuit_option import ChCircuitOption
@@ -15,20 +15,16 @@ from ..circuit.circuit_components import obj_compnt, search_evolution_space_by_h
 from ..circuit.hdi_decompose import driver_component
 
 
-class QtoSearchFastCircuit(QiskitCircuit[ChCircuitOption]):
+class QtoExplorerCircuit(QiskitCircuit[ChCircuitOption]):
     def __init__(self, circuit_option: ChCircuitOption, model_option: ModelOption):
         super().__init__(circuit_option, model_option)
         iprint(self.model_option.Hd_bitstr_list)
-        self.transpiled_hlist = self.transpile_hlist()
+        self._transpiled_hlist = self.transpile_hlist()
         self._hlist = self.hlist()
-        self.result = self.search_circuit()
+        self.result = self.inference()
 
     def get_num_params(self):
-        return self.circuit_option.num_layers * 2 # 该func似乎应该被禁用
-    
-    def inference(self, params):
-        print("use func: search")
-        exit()
+        return self.circuit_option.num_layers * 2
 
     def transpile_hlist(self):
         mcx_mode = self.circuit_option.mcx_mode
@@ -82,7 +78,7 @@ class QtoSearchFastCircuit(QiskitCircuit[ChCircuitOption]):
             
         return hlist
     
-    def search_circuit(self) -> QuantumCircuit:
+    def inference(self):
         mcx_mode = self.circuit_option.mcx_mode
         num_layers = self.circuit_option.num_layers
         num_qubits = self.model_option.num_qubits
@@ -95,8 +91,6 @@ class QtoSearchFastCircuit(QiskitCircuit[ChCircuitOption]):
             
         qc = self.circuit_option.provider.transpile(qc)
         # Ho_params = np.random.rand(num_layers)
-        
-        # Hd_params = np.random.rand(num_layers)
 
         for i in np.nonzero(self.model_option.feasible_state)[0]:
             qc.x(i)
@@ -104,52 +98,35 @@ class QtoSearchFastCircuit(QiskitCircuit[ChCircuitOption]):
         set_basis_lists = []
         depth_lists = []
         already_set = set()
-        last_useful_qc = qc.copy() # 存上一次确认有效的qc，用于最后一层回退
-        search_shots = self.circuit_option.shots * 1000
         for layer in range(num_layers):
-            iprint(f"---- search for layer: {layer + 1} ----")
-            # 加一整层
-            for hdi_vct in self.model_option.Hd_bitstr_list:
-                nonzero_indices = np.nonzero(hdi_vct)[0].tolist()
-                hdi_bitstr = [0 if x == -1 else 1 for x in hdi_vct if x != 0]
-                driver_component(qc, nonzero_indices, anc_idx, hdi_bitstr, np.random.uniform(0.1, np.pi / 4 - 0.1), mcx_mode)
-    
-            qc_cp:QuantumCircuit = qc.copy()
-            qc_cp.measure(range(num_qubits), range(num_qubits)[::-1])
-            qc_cp = self.circuit_option.provider.transpile(qc_cp)
-            counts = self.circuit_option.provider.get_counts_with_time(qc_cp, shots=search_shots)
-            this_time = set(counts.keys())
-
+            Hd_params = np.full(num_layers, np.random.uniform(0.1, np.pi / 4 - 0.1))
+            iprint(f"===== times of repetition: {layer + 1} ======")
+            num_basis_list, set_basis_list, depth_list = search_evolution_space_by_hdi_bitstr(
+                qc,
+                Hd_params,
+                # self.transpiled_hlist, # low_cost 
+                self.model_option.Hd_bitstr_list, # high_cost
+                anc_idx,
+                mcx_mode,
+                num_qubits,
+                self.circuit_option.shots,
+                self.circuit_option.provider,
+            )
+            num_basis_lists.extend(num_basis_list)
+            set_basis_lists.extend(set_basis_list)
+            depth_lists.extend(depth_list)
+            this_time = set.union(*set_basis_list)
+            iprint(num_basis_list)
+            # 早停
             if this_time - already_set:
                 already_set.update(this_time)
-                last_useful_qc = qc.copy()
-                iprint(f"updated, already got {len(already_set)} states")
             else:
-                iprint(f"No update, start backtracking")
                 break
-
-        # 已经确认有效的index(指示tau的是有用的)，回退一层，并检查最后一层
-        confirmed_index = len(self.model_option.Hd_bitstr_list) * layer - 1
-        backtracking_index = 0
-
-        for i, hdi_vct in enumerate(self.model_option.Hd_bitstr_list):
-            nonzero_indices = np.nonzero(hdi_vct)[0].tolist()
-            hdi_bitstr = [0 if x == -1 else 1 for x in hdi_vct if x != 0]
-            driver_component(last_useful_qc, nonzero_indices, anc_idx, hdi_bitstr, np.random.uniform(0.1, np.pi / 4 - 0.1), mcx_mode)
-            qc_cp:QuantumCircuit = last_useful_qc.copy()
-            qc_cp.measure(range(num_qubits), range(num_qubits)[::-1])
-            qc_cp = self.circuit_option.provider.transpile(qc_cp)
-            counts = self.circuit_option.provider.get_counts_with_time(qc_cp, shots=search_shots)
-            this_time = set(counts.keys())
-            if this_time - already_set:
-                already_set.update(this_time)
-                iprint(f"{len(counts)}, ")
-                backtracking_index = i + 1
-        return confirmed_index + backtracking_index
+            
+        return num_basis_lists, set_basis_lists, depth_lists
 
 
-
-class QtoSearchFastSolver(Solver):
+class QtoExplorer(Explorer):
     def __init__(
         self,
         *,
@@ -168,28 +145,28 @@ class QtoSearchFastSolver(Solver):
         from qto.solvers.qiskit import DdsimProvider
 
         self.original_provider = provider
-        self.ddsim_provider = DdsimProvider()
+        self.explore_provider = DdsimProvider()
         self.circuit_option = ChCircuitOption(
-            provider=self.ddsim_provider,
+            provider=self.explore_provider,
             num_layers=num_layers,
-            shots=shots,
+            shots=shots * 100,
             mcx_mode=mcx_mode,
         )
 
     @property
     def circuit(self):
         if self._circuit is None:
-            self._circuit = QtoSearchFastCircuit(self.circuit_option, self.model_option)
+            self._circuit = QtoExplorerCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def search(self):
-        self.original_provider.quantum_circuit_execution_time = self.ddsim_provider.quantum_circuit_execution_time
+    def get_search_result(self):
         return self.circuit.result
     
     @property
     def transpiled_hlist(self):
-        return self.circuit.transpiled_hlist
+        return self.circuit._transpiled_hlist
     
+
     @property
     def hlist(self):
         return self.circuit._hlist

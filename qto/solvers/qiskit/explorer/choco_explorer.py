@@ -2,7 +2,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 
-from qto.solvers.abstract_solver import Solver
+from qto.solvers.abstract_explorer import Explorer
 from qto.solvers.optimizers import Optimizer
 from qto.solvers.options import CircuitOption, OptimizerOption, ModelOption
 from qto.solvers.options.circuit_option import ChCircuitOption
@@ -15,19 +15,16 @@ from ..circuit.circuit_components import obj_compnt, search_evolution_space_by_t
 from ..circuit.hdi_decompose import driver_component
 
 
-class ChocoCircuitSearch(QiskitCircuit[ChCircuitOption]):
+class ChocoExplorerCircuit(QiskitCircuit[ChCircuitOption]):
     def __init__(self, circuit_option: ChCircuitOption, model_option: ModelOption):
         super().__init__(circuit_option, model_option)
         iprint(self.model_option.Hd_bitstr_list)
         self.transpiled_hlist = self.transpile_hlist()
-        self.result = self.search_circuit()
+        self.result = self.inference()
 
     def get_num_params(self):
         return self.circuit_option.num_layers * 2
     
-    def inference(self, params):
-        print("use func: search")
-        exit()
 
     def transpile_hlist(self):
         mcx_mode = self.circuit_option.mcx_mode
@@ -53,7 +50,7 @@ class ChocoCircuitSearch(QiskitCircuit[ChCircuitOption]):
             
         return transpiled_hlist
 
-    def search_circuit(self) -> QuantumCircuit:
+    def inference(self):
         mcx_mode = self.circuit_option.mcx_mode
         num_layers = self.circuit_option.num_layers
         num_qubits = self.model_option.num_qubits
@@ -92,7 +89,7 @@ class ChocoCircuitSearch(QiskitCircuit[ChCircuitOption]):
         return num_basis_list, depth_lists
 
 
-class ChocoSolverSearch(Solver):
+class ChocoExplorer(Explorer):
     def __init__(
         self,
         *,
@@ -114,8 +111,8 @@ class ChocoSolverSearch(Solver):
     @property
     def circuit(self):
         if self._circuit is None:
-            self._circuit = ChocoCircuitSearch(self.circuit_option, self.model_option)
+            self._circuit = ChocoExplorerCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def search(self):
+    def get_search_result(self):
         return self.circuit.result

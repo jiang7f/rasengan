@@ -12,8 +12,8 @@ from qto.utils.linear_system import to_row_echelon_form, greedy_simplification_o
 from .circuit import QiskitCircuit
 from .provider import Provider
 from .circuit.circuit_components import obj_compnt, new_compnt
-from .explore.qto_search import QtoSearchSolver
-from .explore.qto_search_fast import QtoSearchFastSolver
+from .explorer.qto_explorer import QtoExplorer
+from .explorer.qto_explorer_fast import QtoSearchFastSolver
 
 class RasenganCircuit(QiskitCircuit[ChCircuitOption]):
     def __init__(self, circuit_option: ChCircuitOption, model_option: ModelOption):
@@ -85,8 +85,8 @@ class RasenganSolver(Solver):
             shots=shots,
             mcx_mode=mcx_mode,
         )
-        search_solver = QtoSearchSolver(
-        # search_solver = QtoSearchFastSolver(
+        explorer = QtoExplorer(
+        # explorer = QtoSearchFastSolver(
             prb_model=prb_model,
             optimizer=optimizer,
             provider=provider,
@@ -98,7 +98,7 @@ class RasenganSolver(Solver):
         max_id = -1
 
         # ***逐个测试方案***
-        _, set_basis_lists, _ = search_solver.search()
+        _, set_basis_lists, _ = explorer.explore()
         useful_idx = []
         already_set = set()
         if len(set_basis_lists[0]) != 1:
@@ -113,11 +113,12 @@ class RasenganSolver(Solver):
                 max_id = i
 
         # ***逐层搜索+回溯方案***
-        # max_id = search_solver.search()
+        # max_id = explorer.search()
 
+        max_id += 1 # 左闭右开+1
         iprint(f'range({min_id}, {max_id})')
         Hd_bitstr_list = np.tile(self.model_option.Hd_bitstr_list, (num_layers, 1))
-        self.model_option.Hd_bitstr_list = [item for i, item in enumerate(Hd_bitstr_list) if i >= min_id and i <= max_id]
+        self.model_option.Hd_bitstr_list = [item for i, item in enumerate(Hd_bitstr_list) if i >= min_id and i < max_id]
 
 
     @property

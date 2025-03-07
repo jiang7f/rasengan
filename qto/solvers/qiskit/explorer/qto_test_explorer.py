@@ -2,7 +2,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 
-from qto.solvers.abstract_solver import Solver
+from qto.solvers.abstract_explorer import Explorer
 from qto.solvers.optimizers import Optimizer
 from qto.solvers.options import CircuitOption, OptimizerOption, ModelOption
 from qto.solvers.options.circuit_option import ChCircuitOption
@@ -15,20 +15,16 @@ from ..circuit.circuit_components import obj_compnt, search_evolution_space_by_h
 from ..circuit.hdi_decompose import driver_component
 
 
-class QtoSearchCircuit(QiskitCircuit[ChCircuitOption]):
+class QtoTestExplorerCircuit(QiskitCircuit[ChCircuitOption]):
     def __init__(self, circuit_option: ChCircuitOption, model_option: ModelOption):
         super().__init__(circuit_option, model_option)
         iprint(self.model_option.Hd_bitstr_list)
-        self.transpiled_hlist = self.transpile_hlist()
+        self._transpiled_hlist = self.transpile_hlist()
         self._hlist = self.hlist()
-        self.result = self.search_circuit()
+        self.result = self.inference()
 
     def get_num_params(self):
         return self.circuit_option.num_layers * 2
-    
-    def inference(self, params):
-        print("use func: search")
-        exit()
 
     def transpile_hlist(self):
         mcx_mode = self.circuit_option.mcx_mode
@@ -82,7 +78,7 @@ class QtoSearchCircuit(QiskitCircuit[ChCircuitOption]):
             
         return hlist
     
-    def search_circuit(self) -> QuantumCircuit:
+    def inference(self):
         mcx_mode = self.circuit_option.mcx_mode
         num_layers = self.circuit_option.num_layers
         num_qubits = self.model_option.num_qubits
@@ -113,7 +109,7 @@ class QtoSearchCircuit(QiskitCircuit[ChCircuitOption]):
                 anc_idx,
                 mcx_mode,
                 num_qubits,
-                self.circuit_option.shots * 100,
+                self.circuit_option.shots,
                 self.circuit_option.provider,
             )
             num_basis_lists.extend(num_basis_list)
@@ -130,7 +126,7 @@ class QtoSearchCircuit(QiskitCircuit[ChCircuitOption]):
         return num_basis_lists, set_basis_lists, depth_lists
 
 
-class QtoSearchSolver(Solver):
+class QtoTestExplorer(Explorer):
     def __init__(
         self,
         *,
@@ -149,28 +145,28 @@ class QtoSearchSolver(Solver):
         from qto.solvers.qiskit import DdsimProvider
 
         self.original_provider = provider
-        self.ddsim_provider = DdsimProvider()
+        self.explore_provider = DdsimProvider()
         self.circuit_option = ChCircuitOption(
-            provider=self.ddsim_provider,
+            provider=self.explore_provider,
             num_layers=num_layers,
-            shots=shots,
+            shots=shots * 100,
             mcx_mode=mcx_mode,
         )
 
     @property
     def circuit(self):
         if self._circuit is None:
-            self._circuit = QtoSearchCircuit(self.circuit_option, self.model_option)
+            self._circuit = QtoTestExplorerCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def search(self):
-        self.original_provider.quantum_circuit_execution_time = self.ddsim_provider.quantum_circuit_execution_time
+    def get_search_result(self):
         return self.circuit.result
     
     @property
     def transpiled_hlist(self):
-        return self.circuit.transpiled_hlist
+        return self.circuit._transpiled_hlist
     
+
     @property
     def hlist(self):
         return self.circuit._hlist

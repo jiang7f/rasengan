@@ -12,7 +12,7 @@ from qto.utils.linear_system import to_row_echelon_form, greedy_simplification_o
 from .circuit import QiskitCircuit
 from .provider import Provider
 from .circuit.circuit_components import obj_compnt, new_compnt
-from .explore.qto_search import QtoSearchSolver
+from .explorer.qto_explorer import QtoExplorer
 
 class RasenganSegmentedCircuit(QiskitCircuit[ChCircuitOption]):
     def __init__(self, circuit_option: ChCircuitOption, model_option: ModelOption, hlist: list[QuantumCircuit], segmentation):
@@ -96,7 +96,7 @@ class RasenganSegmentedSolver(Solver):
             shots=shots,
             mcx_mode=mcx_mode,
         )
-        search_solver = QtoSearchSolver(
+        explorer = QtoExplorer(
             prb_model=prb_model,
             optimizer=optimizer,
             provider=provider,
@@ -106,12 +106,12 @@ class RasenganSegmentedSolver(Solver):
         )
 
         # 编译过的transpiled_hlist \O/
-        hlist = search_solver.hlist
+        hlist = explorer.hlist
         min_id = 0
         max_id = -1
 
         # ***逐个测试方案***
-        _, set_basis_lists, _ = search_solver.search()
+        _, set_basis_lists, _ = explorer.explore()
         useful_idx = []
         already_set = set()
         if len(set_basis_lists[0]) != 1:

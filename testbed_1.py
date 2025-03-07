@@ -17,16 +17,15 @@ m.setObjective((x[0] + x[1])* x[3] + x[2], "max")
 m.addConstr(x[0] + x[1] - x[2] == 0)
 # m.addConstr(x[2] + x[3] - x[4] == 1)
 
-
-
 print(m.lin_constr_mtx)
 # exit()
 # m.set_penalty_lambda(0)
 print(m)
 optimize = m.optimize()
 print(f"optimize_cost: {optimize}\n\n")
+
 # sovler ----------------------------------------------
-opt = CobylaOptimizer(max_iter=10, save_address='cost_history')
+opt = CobylaOptimizer(max_iter=100, save_address='cost_history')
 aer = DdsimProvider()
 gpu = AerGpuProvider()
 fake = FakeBrisbaneProvider()

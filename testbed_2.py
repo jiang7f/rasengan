@@ -40,7 +40,7 @@ for i in range(num_case):
         provider=aer,  # 提供器（backend + 配对 pass_mannager ）
         num_layers=5,
         shots=1024,
-        num_segments=10,
+        # num_segments=10,
         # mcx_mode="linear",
     )
     result = solver.solve()
@@ -50,7 +50,7 @@ for i in range(num_case):
     best_lst.append(u)
     arg_lst.append(w)
     print(aer.run_count)
-    print(solver.circuit_analyze(['depth', 'culled_depth', 'num_params']))
+    # print(solver.circuit_analyze(['depth', 'culled_depth', 'num_params']))
     # print(list(solver.time_analyze()))
     # print(sum(best_lst) / num_case, sum(arg_lst) / num_case)
     t1, t2 = solver.time_analyze()

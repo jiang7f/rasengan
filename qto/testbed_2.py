@@ -6,8 +6,8 @@ from qto.problems.graph_coloring_problem import generate_gcp
 from qto.model import LinearConstrainedBinaryOptimization as LcboModel
 from qto.solvers.optimizers import CobylaOptimizer, AdamOptimizer
 from qto.solvers.qiskit import (
-    ChocoSolver, CyclicSolver, HeaSolver, PenaltySolver, NewSolver, NewXSolver, ChocoSolverSearch, 
-    QtoSearchSolver, QtoSolver, QtoSimplifySolver, QtoSimplifyDiscardSolver, 
+    ChocoSolver, CyclicSolver, HeaSolver, PenaltySolver, NewSolver, NewXSolver, ChocoExplorer, 
+    QtoExplorer, QtoSolver, QtoSimplifySolver, QtoSimplifyDiscardSolver, 
     AerGpuProvider, AerProvider, FakeBrisbaneProvider, FakeKyivProvider, FakeTorinoProvider, DdsimProvider,
 )
 
