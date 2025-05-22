@@ -34,5 +34,5 @@ for i in range(num_case):
         # mcx_mode="linear",
     )
 
-    num_basis_lists, set_basis_lists, depth_lists = explorer.explore()
+    num_basis_lists, set_basis_lists, depth_lists = explorer.explore_with_time()
     print(num_basis_lists, depth_lists)

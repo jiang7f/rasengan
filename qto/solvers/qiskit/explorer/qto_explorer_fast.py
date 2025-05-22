@@ -178,7 +178,7 @@ class QtoSearchFastSolver(Explorer):
             self._circuit = QtoSearchFastCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def explore(self):
+    def explore_with_time(self):
         self.original_provider.quantum_circuit_execution_time = self.ddsim_provider.quantum_circuit_execution_time
         return self.circuit.result
     

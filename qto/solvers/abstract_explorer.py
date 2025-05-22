@@ -28,17 +28,13 @@ class Explorer(ABC):
 
         self.solver_start_time = time.perf_counter()  # 记录开始时间用于计算端到端时间
 
-    @property
-    @abstractmethod
-    def circuit(self) -> QiskitCircuit:
-        pass
 
     @abstractmethod
-    def get_search_result(self):
-        pass
-
     def explore(self):
-        result = self.get_search_result()
+        pass
+
+    def explore_with_time(self):
+        result = self.explore()
         solver_end_time = time.perf_counter()  # 使用 perf_counter 记录结束时间
         self.end_to_end_time = solver_end_time - self.solver_start_time
         # 同步给调用explorer的solver

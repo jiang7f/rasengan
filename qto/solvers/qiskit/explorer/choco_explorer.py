@@ -114,5 +114,5 @@ class ChocoExplorer(Explorer):
             self._circuit = ChocoExplorerCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def get_search_result(self):
+    def explore(self):
         return self.circuit.result

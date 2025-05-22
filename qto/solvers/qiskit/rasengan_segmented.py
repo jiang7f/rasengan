@@ -111,7 +111,7 @@ class RasenganSegmentedSolver(Solver):
         max_id = -1
 
         # ***逐个测试方案***
-        _, set_basis_lists, _ = explorer.explore()
+        _, set_basis_lists, _ = explorer.explore_with_time()
         useful_idx = []
         already_set = set()
         if len(set_basis_lists[0]) != 1:

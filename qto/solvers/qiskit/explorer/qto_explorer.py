@@ -99,7 +99,8 @@ class QtoExplorerCircuit(QiskitCircuit[ChCircuitOption]):
         depth_lists = []
         already_set = set()
         for layer in range(num_layers):
-            Hd_params = np.full(num_layers, np.random.uniform(0.1, np.pi / 4 - 0.1))
+            # Hd_params = np.full(num_layers, np.random.uniform(0.1, np.pi / 4 - 0.1))
+            Hd_params = np.full(num_layers, np.pi / 4)
             iprint(f"===== times of repetition: {layer + 1} ======")
             num_basis_list, set_basis_list, depth_list = search_evolution_space_by_hdi_bitstr(
                 qc,
@@ -159,7 +160,7 @@ class QtoExplorer(Explorer):
             self._circuit = QtoExplorerCircuit(self.circuit_option, self.model_option)
         return self._circuit
 
-    def get_search_result(self):
+    def explore(self):
         return self.circuit.result
     
     @property
