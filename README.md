@@ -1,6 +1,6 @@
 ## Installation
 
-You can install the virtual environment in two version, The CPU version is for simulation quantum circuit with CPU and the GPU version simulate quantum circuit by GPU.
+The virtual environment is available in two versions: CPU-based and GPU-based quantum circuit simulation.
 
 ### CPU version
 1. Install the envirnoment by conda
@@ -9,37 +9,27 @@ conda env create -f environment_cpu.yml
 ```
 2. activate the installed virtual environment.
 ```bash
-conda activate qto_cpu
+conda activate rasengan_cpu
 ```
 If the installation is interrupted or fails, you need to delete the environment and reinstall: 
 ```bash
-conda remove -n qto_cpu --all
-```
-3. install qto
-```bash
-pip install .
+conda remove -n rasengan_cpu --all
 ```
 
-
-### GPU version （need the support of CUDA12）
+### GPU version （need the support of CUDA12.8）
 1. Install the envirnoment by conda
 ```bash
 conda env create -f environment_gpu.yml
 ```
 2. activate the installed virtual environment.
 ```bash
-conda activate qto_gpu
+conda activate rasengan_gpu
 ```
 If the nextwork is poor, the installation time for GPU will be longer, please be patient.
 When the installation is interrupted or fails, you need to delete the environment and reinstall: 
 ```bash
-conda remove -n qto_gpu --all
+conda remove -n rasengan_gpu --all
 ```
-3. install qto
-```bash
-pip install .
-```
-
 
 
 ## Test for installation
@@ -54,7 +44,7 @@ python testbed_gpu.py
 ```
 for GPU version.
 
-If you see "Environment configuration is successful!" it means the installation is successful.
+If you see "✅  Environment configuration is successful!" it means the installation is successful.
 
 If the installation fails, you may consider:
 
