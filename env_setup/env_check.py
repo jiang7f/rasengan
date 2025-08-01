@@ -1,5 +1,3 @@
-should_print = True
-
 from rasengan.model import LinearConstrainedBinaryOptimization as LcboModel
 from rasengan.solvers.optimizers import CobylaOptimizer, AdamOptimizer
 from rasengan.solvers.qiskit import (
@@ -11,35 +9,43 @@ from rasengan.solvers.qiskit import (
 m = LcboModel()
 x = m.addVars(3, name="x")
 m.setObjective(x[0] + x[1] - x[2], "max")
-
 m.addConstr(x[0] + x[1] + x[2] == 2)
-
-print(m.lin_constr_mtx)
-print(m)
 optimize = m.optimize()
-print(f"optimize_cost: {optimize}\n\n")
 # sovler ----------------------------------------------
 opt = CobylaOptimizer(max_iter=200)
-# gpu = AerGpuProvider()
+gpu = AerGpuProvider()
 aer = DdsimProvider()
-solver = RasenganSolver(
-    prb_model=m,  # 问题模型
-    optimizer=opt,  # 优化器
-    provider=aer,  # 提供器（backend + 配对 pass_mannager ）
+
+solver_cpu = RasenganSolver(
+    prb_model=m,
+    optimizer=opt,
+    provider=aer,
     num_layers=1,
-    # mcx_mode="linear",
 )
+print("="*50)
 try:
-    print(solver.circuit_analyze(['depth', 'width', 'culled_depth', 'num_one_qubit_gates']))
-    result = solver.solve()
-    eval = solver.evaluation()
-    print(result)
-    print(eval)
-    print("="*50)
+    result = solver_cpu.solve()
+    eval = solver_cpu.evaluation()
+    # print(eval)
     print("✅  CPU environment configured successfully!")
-    print("="*50)
 except Exception as e:
-    print("="*50)
     print("❌  CPU environment configuration failed.")
     print(e)
-    print("="*50)
+
+solver_gpu = RasenganSolver(
+    prb_model=m,
+    optimizer=opt,
+    provider=gpu,
+    num_layers=1,
+)
+
+try:
+    result = solver_gpu.solve()
+    eval = solver_gpu.evaluation()
+    # print(eval)
+    print("✅  GPU environment configured successfully!")
+except Exception as e:
+    print("❌  GPU environment configuration failed.")
+    print(e)
+print("="*50)
+

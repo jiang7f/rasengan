@@ -1,4 +1,4 @@
-name: rasengan_cpu
+name: rasengan
 channels:
   - defaults
 dependencies:
