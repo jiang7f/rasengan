@@ -95,7 +95,8 @@ If the test fails, consider:
 
 The original paper evaluates our algorithm on 20 benchmark problems, each with 100 cases. Some of these experiments require several days of continuous computation.
 
-To reduce the cost of reproduction, the programs in the `reproduce/` directory have been appropriately scaled down. The total runtime is approximately **30 hours on CPU**, or **40 hours with GPU acceleration**. Experiments were conducted on the following hardware:
+To reduce the cost of reproduction, the programs in the `reproduce/` directory have been appropriately scaled down by decreasing the number of benchmarks.
+Additionally, the number of cases per benchmark is reduced from 100 to approximately 10, which may introduce some bias in the experimental results. The total runtime is approximately **40 hours on CPU**, or **25 hours with GPU acceleration**. Experiments were conducted on the following hardware:
 
 - **OS**: Ubuntu 20.04 LTS
 - **CPU**: Dual AMD EPYC 9554, 128 cores
@@ -150,3 +151,10 @@ These errors may occur when **too many reproduction programs are executed simult
 
 **Solution:**
 Run the reproduction programs **one at a time**, preferably in sequence. If the issue persists even with sequential execution, consider reducing parallelism by adjusting the `num_processes` variable in the script, or switching to a machine with more resources.
+
+### 2. Output files are missing or not saved in the expected subdirectory
+
+This usually happens when the script is executed from the wrong working directory, since output paths are **relative to the execution location**.
+
+**Solution:**
+Make sure to **run each script from within its corresponding subdirectory** (e.g., `figure_x/` or `table_2/`) so that output files are saved in the correct place.
